@@ -204,6 +204,12 @@ test.describe('browser split Find shortcut', () => {
     await waitForSessionReady(orcaPage)
     await waitForActiveWorktree(orcaPage)
     await ensureTerminalVisible(orcaPage)
+    // Why: the persistent "Import browser data" toolbar button overlaps the
+    // address-bar click target in these specs. The button is intentional
+    // product UI, so the specs dismiss it instead of fighting the layout.
+    await orcaPage.evaluate(() => {
+      window.__store?.getState().setBrowserImportHintHidden(true)
+    })
   })
 
   test('routes repeated Find shortcuts to the focused terminal or browser split', async ({

@@ -25,22 +25,33 @@ test('automation detail keeps short prompts readable and reveals a very long pro
       }
       const base = {
         agentId: 'codex' as const,
-        projectId: repo.id,
         workspaceMode: 'new_per_run' as const,
         reuseSession: false,
         timezone: 'UTC',
         rrule: 'FREQ=DAILY;BYHOUR=9;BYMINUTE=0',
         dtstart: Date.now(),
         enabled: false,
-        missedRunGraceMinutes: 720
+        missedRunGraceMinutes: 720,
+        // Why: the window.api.automations.create preload bridge was removed;
+        // automation CRUD now rides the local runtime RPC surface. projectId
+        // maps to the wire contract's `repo: 'id:<repoId>'` selector.
+        repo: `id:${repo.id}`,
+        destination: { selector: { kind: 'self' } as const }
       }
-      await window.api.automations.create({
-        ...base,
+      async function createAutomation(input: { name: string; prompt: string }): Promise<void> {
+        const response = await window.api.runtime.call({
+          method: 'automation.create',
+          params: { ...base, ...input }
+        })
+        if (!response.ok) {
+          throw new Error(`automation.create failed: ${response.error.message}`)
+        }
+      }
+      await createAutomation({
         name: shortName,
         prompt: 'Synthetic short prompt.'
       })
-      await window.api.automations.create({
-        ...base,
+      await createAutomation({
         name: longName,
         prompt: [
           'Synthetic prompt preview validation only.',
@@ -56,8 +67,7 @@ test('automation detail keeps short prompts readable and reveals a very long pro
           endMarker
         ].join('\n')
       })
-      await window.api.automations.create({
-        ...base,
+      await createAutomation({
         name: resizeName,
         prompt: resizePrompt
       })

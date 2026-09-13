@@ -21,8 +21,11 @@ test('@golden opens an unstaged file diff from Source Control', async ({
   registerPostElectronShutdownCleanup(async () => cleanupGoldenWorktree(testRepoPath, fixture))
 
   await waitForSessionReady(orcaPage)
-  await openGoldenSourceControl(orcaPage, testRepoPath, fixture)
+  // Why seed before opening: the commit composer only renders when the worktree
+  // is dirty — on a clean tree the panel shows the "No changes" empty state, so
+  // openGoldenSourceControl's Commit-message wait needs the edit in place first.
   seedGoldenSourceEdit(fixture.worktreePath)
+  await openGoldenSourceControl(orcaPage, testRepoPath, fixture)
 
   const changedFile = orcaPage
     .locator('[data-testid="source-control-entry"]')

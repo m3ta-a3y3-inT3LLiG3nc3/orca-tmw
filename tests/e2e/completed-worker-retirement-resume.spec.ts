@@ -267,9 +267,13 @@ for (const closeMode of ['terminal-close-cli', 'worker-release'] as const) {
       }
     )
 
+    // Why 'done' and not 'working': a finished turn keeps its resume identity so a
+    // cold restore can re-enter the agent, but the record must not restate `done`
+    // as pending work — restating it as 'working' respawned every finished agent
+    // whose pane was killed (see finished-agent-resume-resurrection.test.ts).
     const expectedRecovery = {
       origin: 'live',
-      state: 'working',
+      state: 'done',
       providerSessionId: PROVIDER_SESSION_ID
     }
     await expect
