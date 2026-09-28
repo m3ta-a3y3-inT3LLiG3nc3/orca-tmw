@@ -43,7 +43,13 @@ const cloudB: OrcaProfileCloudSummary = {
   linkedAt: 2
 }
 
-function createResponse(slug = 'artifact-a', expiresAt = '2026-09-06T00:00:00.000Z'): Response {
+// Share fixtures must stay live relative to the test clock: the record store prunes
+// expired records on read, so a hardcoded past expiry silently drops every share mapping.
+function liveShareExpiry(): string {
+  return new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+}
+
+function createResponse(slug = 'artifact-a', expiresAt = liveShareExpiry()): Response {
   return new Response(
     JSON.stringify({
       artifact: {

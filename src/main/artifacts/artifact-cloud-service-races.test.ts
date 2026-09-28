@@ -33,7 +33,9 @@ function createResponse(slug: string): Response {
         renderedContentType: 'text/html',
         createdAt: '2026-08-06T00:00:00.000Z',
         updatedAt: '2026-08-06T00:00:00.000Z',
-        expiresAt: '2026-09-06T00:00:00.000Z',
+        // Fixtures must stay live relative to the test clock: the record store prunes
+        // expired records on read, so a hardcoded past expiry drops every share mapping.
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
         byteSize: 12,
         deletedAt: null
       },
